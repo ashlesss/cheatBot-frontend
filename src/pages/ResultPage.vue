@@ -7,14 +7,25 @@
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/default.css';
+import NotifyMixin from '../mixins/Notification'
 
 export default {
+
+  mixins: [NotifyMixin],
+
   data() {
     return {
       md: null,
       mdContent: ''
     };
   },
+
+  computed: {
+    mdFileID() {
+      return this.$route.params.id
+    }
+  },
+
   created() {
     this.md = new MarkdownIt({
       highlight: function (str, lang) {
@@ -51,9 +62,17 @@ export default {
   },
 
   mounted() {
-    this.$axios.get('https://raw.githubusercontent.com/ashlesss/cheatBot-frontend/main/src/assets/out-codeBlocks.md')
+    this.$axios.get(`https://bot.ashless.io/${this.mdFileID}.md`)
         .then(res => {
             this.mdContent = res.data
+        })
+        .catch(err => {
+          if (err.response) {
+              this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`)
+          }
+          else {
+              this.showErrNotif(err.message || err)
+          }
         })
   }
 };
