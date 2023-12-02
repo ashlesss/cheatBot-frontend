@@ -7,7 +7,6 @@
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/default.css';
-import { h } from 'vue';
 
 export default {
   data() {
@@ -52,7 +51,7 @@ export default {
   },
 
   mounted() {
-    this.$axios.get('https://raw.githubusercontent.com/ashlesss/cheatBot-frontend/main/src/assets/out.md')
+    this.$axios.get('https://raw.githubusercontent.com/ashlesss/cheatBot-frontend/main/src/assets/out-codeBlocks.md')
         .then(res => {
             this.mdContent = res.data
         })
@@ -73,5 +72,6 @@ export default {
     color: #ffffff;
     font-weight: bold;
     font-size: 24px;
+    border-radius: 10px;
 }
 </style>
