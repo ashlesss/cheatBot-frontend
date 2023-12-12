@@ -18,12 +18,14 @@
     "axios": "^1.6.2",
     "highlight.js": "^11.9.0",
     "markdown-it": "^13.0.2",
+    "prismjs": "^1.29.0",
     "quasar": "^2.6.0",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
+    "@quasar/quasar-app-extension-qmarkdown": "^2.0.0-beta.10",
     "autoprefixer": "^10.4.2",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
