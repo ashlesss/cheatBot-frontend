@@ -1,5 +1,5 @@
 <template>
-    <div v-html="renderMarkdown()"></div>
+    <div v-html="renderMarkdown()" class="q-pa-md main"></div>
 </template>
   
 
@@ -8,6 +8,8 @@ import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/default.css';
 import NotifyMixin from '../mixins/Notification'
+import texmath from 'markdown-it-texmath'
+import katex from 'katex'
 
 export default {
 
@@ -23,7 +25,11 @@ export default {
   computed: {
     mdFileID() {
       return this.$route.params.id
-    }
+    },
+
+    url() {
+      return `${process.env.HOST}/${this.mdFileID}.md`
+    },
   },
 
   created() {
@@ -36,6 +42,18 @@ export default {
         }
         return ''; // use external default escaping
       }
+    }).use(texmath, {
+      engine: katex,
+      delimiters: [
+      'dollars',
+      'brackets',
+      'doxygen',
+      'gitlab',
+      'julia',
+      'kramdown',
+      'beg_end'
+      ],
+      katexOptions: { macros: {"\\RR": "\\mathbb{R}"} }
     });
 
     // Custom renderer for code blocks
@@ -62,9 +80,14 @@ export default {
   },
 
   mounted() {
-    this.$axios.get(`https://bot.ashless.io/${this.mdFileID}.md`)
+    this.$axios.get(this.url)
         .then(res => {
             this.mdContent = res.data
+            this.mdContent += `\n\n**Notes from developers:** `
+            + `\n\nResponse can be view as raw format at: <${this.url}>.`
+            + `\n\nIf you want to view the **formatted math expression**, use this site: [QuickLATEX](https://quicklatex.com/)`
+            + ` and copy and paste contents from download link's file. Do **not** copy and paste the current web page content.`
+            + ` Because current page is rendered in \`markdown\` so some of the math delimiters will be ignored or shown incorrectly.`
         })
         .catch(err => {
           if (err.response) {
@@ -92,5 +115,13 @@ export default {
     font-weight: bold;
     font-size: 24px;
     border-radius: 10px;
+}
+
+.main {
+  font-size: 20px;
+}
+
+.katex {
+  background-color: #ffe208;
 }
 </style>
