@@ -1,5 +1,9 @@
 <template>
     <div v-html="renderMarkdown()" class="q-pa-md main"></div>
+
+    <div class="q-pa-md">
+      <RawPage :content="mdContent" />
+    </div>
 </template>
   
 
@@ -10,15 +14,21 @@ import 'highlight.js/styles/default.css';
 import NotifyMixin from '../mixins/Notification'
 import texmath from 'markdown-it-texmath'
 import katex from 'katex'
+import RawPage from '../components/RawPage.vue'
 
 export default {
 
   mixins: [NotifyMixin],
 
+  components: {
+    RawPage
+  },
+
   data() {
     return {
       md: null,
-      mdContent: ''
+      mdContent: '',
+      mdContentWithNote: ''
     };
   },
 
@@ -75,7 +85,7 @@ export default {
   },
   methods: {
     renderMarkdown() {
-      return this.md.render(this.mdContent);
+      return this.md.render(this.mdContentWithNote);
     }
   },
 
@@ -83,11 +93,12 @@ export default {
     this.$axios.get(this.url)
         .then(res => {
             this.mdContent = res.data
-            this.mdContent += `\n\n**Notes from developers:** `
-            + `\n\nResponse can be view as raw format at: <${this.url}>.`
+            this.mdContentWithNote = res.data
+            this.mdContentWithNote += `\n\n**Notes from developers:** `
             + `\n\nIf you want to view the **formatted math expression**, use this site: [QuickLATEX](https://quicklatex.com/)`
-            + ` and copy and paste contents from download link's file. Do **not** copy and paste the current web page content.`
+            + ` and copy and paste contents from text box below. Do **not** copy and paste the current web page content.`
             + ` Because current page is rendered in \`markdown\` so some of the math delimiters will be ignored or shown incorrectly.`
+            + `\n\n**RAW OUTPUT:**`
         })
         .catch(err => {
           if (err.response) {
