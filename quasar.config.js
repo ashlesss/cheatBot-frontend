@@ -60,7 +60,8 @@ module.exports = configure(function (ctx) {
       },
 
       env: {
-        HOST: ctx.dev ? 'http://localhost:18686' : 'https://bot.ashless.io'
+        // HOST: ctx.dev ? 'http://localhost:18686' : 'https://bot.ashless.io',
+        HOST: 'https://bot.ashless.io'
       },
 
       vueRouterMode: 'history', // available values: 'hash', 'history'

@@ -89,75 +89,58 @@ export default {
     },
 
     getContentStrategy(url) {
-      this.$axios.get(url)
+      // Try the first request to Express server
+      return this.$axios.get(url)
         .then(res => {
           if (res.data.length) {
-            return res
+            return res.data;
+          }
+          else {
+            throw new Error('No content in response, trying fallback'); // fallback to native
           }
         })
         .catch(err => {
-          if (err.response) {
-            this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`)
+          if (err.response && err.response.status === 404) {
+            console.log('Falling back to native');
+          }
+          else if (err.response) {
+            this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`);
           }
           else {
-            this.showErrNotif(err.message || err)
+            this.showErrNotif(err.message || err);
           }
-          console.error('Getting response content from file server error')
-        })
 
-      this.$axios.get(`${process.env.HOST}/${this.mdFileID}.md`)
-        .then(res => {
-          return res
-        })
-        .catch(err => {
-          if (err.response) {
-            this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`)
-          }
-          else {
-            this.showErrNotif(err.message || err)
-          }
-          console.error('Getting response content from file server(nginx) error')
-        })
+          console.error('Getting response content from file server error, trying fallback');
+
+          // Fallback to the native request
+          return this.$axios.get(`${process.env.HOST}/${this.mdFileID}.md`)
+            .then(res => {
+              return res.data;
+            })
+            .catch(err => {
+              if (err.response) {
+                this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`);
+              }
+              else {
+                this.showErrNotif(err.message || err);
+              }
+              console.error('Getting response content from file server (nginx) error');
+              return '';
+            });
+        });
     }
+
   },
 
-  mounted() {
-    this.getContentStrategy(this.url)
-      .then(res => {
-        this.mdContent = res.data
-        this.mdContentWithNote = res.data
-        this.mdContentWithNote += `\n\n**Notes from developers:** `
-          + `\n\nIf you want to view the **formatted math expression**, use this site: [QuickLATEX](https://quicklatex.com/)`
-          + ` and copy and paste contents from text box below. Do **not** copy and paste the current web page content.`
-          + ` Because current page is rendered in \`markdown\` so some of the math delimiters will be ignored or shown incorrectly.`
-          + `\n\n**RAW OUTPUT:**`
-      })
-      .catch(err => {
-        if (err.response) {
-          this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`)
-        }
-        else {
-          this.showErrNotif(err.message || err)
-        }
-      })
-    // this.$axios.get(this.url)
-    //   .then(res => {
-    //     this.mdContent = res.data
-    //     this.mdContentWithNote = res.data
-    //     this.mdContentWithNote += `\n\n**Notes from developers:** `
-    //       + `\n\nIf you want to view the **formatted math expression**, use this site: [QuickLATEX](https://quicklatex.com/)`
-    //       + ` and copy and paste contents from text box below. Do **not** copy and paste the current web page content.`
-    //       + ` Because current page is rendered in \`markdown\` so some of the math delimiters will be ignored or shown incorrectly.`
-    //       + `\n\n**RAW OUTPUT:**`
-    //   })
-    //   .catch(err => {
-    //     if (err.response) {
-    //       this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`)
-    //     }
-    //     else {
-    //       this.showErrNotif(err.message || err)
-    //     }
-    //   })
+  async mounted() {
+    const data = await this.getContentStrategy(this.url)
+    this.mdContent = data
+    this.mdContentWithNote = data
+    this.mdContentWithNote += `\n\n**Notes from developers:** `
+      + `\n\nIf you want to view the **formatted math expression**, use this site: [QuickLATEX](https://quicklatex.com/)`
+      + ` and copy and paste contents from text box below. Do **not** copy and paste the current web page content.`
+      + ` Because current page is rendered in \`markdown\` so some of the math delimiters will be ignored or shown incorrectly.`
+      + `\n\n**RAW OUTPUT:**`
   }
 };
 </script>
