@@ -1,0 +1,17 @@
+diff --git a/node_modules/markdown-it-texmath/texmath.js b/node_modules/markdown-it-texmath/texmath.js
+index eb049d1..8845f28 100644
+--- a/node_modules/markdown-it-texmath/texmath.js
++++ b/node_modules/markdown-it-texmath/texmath.js
+@@ -207,6 +207,12 @@ texmath.$_post = (str,outerSpace,end) => {
+ texmath.rules = {
+     brackets: {
+         inline: [ 
++            {   name: 'math_inline_double',
++                rex: /\\\[([\s\S]+?)\\\]/gy,
++                tmpl: '<section><eqn>$1</eqn></section>',
++                tag: '\\[',
++                displayMode: true
++            },
+             {   name: 'math_inline',
+                 rex: /\\\((.+?)\\\)/gy,
+                 tmpl: '<eq>$1</eq>',
