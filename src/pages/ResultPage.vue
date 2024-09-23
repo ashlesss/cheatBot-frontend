@@ -119,7 +119,10 @@ export default {
             })
             .catch(err => {
               if (err.response) {
-                this.showErrNotif(err.response.data.error || `${err.response.status} ${err.response.statusText}`);
+                if (err.response.status === 404) {
+                  this.showErrNotif('No content found')
+                  return ''
+                }
               }
               else {
                 this.showErrNotif(err.message || err);
@@ -134,6 +137,9 @@ export default {
 
   async mounted() {
     const data = await this.getContentStrategy(this.url)
+    if (data === '') {
+      return
+    }
     this.mdContent = data
     this.mdContentWithNote = data
     this.mdContentWithNote += `\n\n**Notes from developers:** `
