@@ -10,9 +10,9 @@ if quasar build; then
     mkdir -p /var/www/cheatBot/
   fi
 
-  mv ./dist /var/www/cheatBot/ && echo "* DONE" || echo "Failed"
+  mv ./dist /var/www/cheatBot/ && echo "* ALL DONE" || echo "* Failed"
 else
-  echo "Quasar build failed"
+  echo "* Quasar build failed"
 fi
 
 
