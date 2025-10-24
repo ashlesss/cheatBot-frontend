@@ -1,19 +1,21 @@
 <template>
-  <div class="streaming-markdown-container">
+  <div class="streaming-markdown-container" ref="mdRenderedContent">
     <div v-html="renderedContent" class="markdown-content"></div>
     <span v-if="isStreaming" class="cursor-blink">▊</span>
   </div>
 </template>
 
 <script>
-import MarkdownIt from "markdown-it";
-import hljs from "highlight.js";
-import tm from "markdown-it-texmath";
-import katex from "katex";
+import markdownRenderer from "../mixins/markdownRenderer.js";
 import "highlight.js/styles/default.css";
+import "../css/code-block.css";
+import { scroll } from "quasar";
+const { getScrollTarget, setVerticalScrollPosition } = scroll;
 
 export default {
   name: "StreamingMarkdown",
+
+  mixins: [markdownRenderer],
 
   props: {
     // The streaming content - can be updated incrementally
@@ -35,7 +37,6 @@ export default {
 
   data() {
     return {
-      md: null,
       renderedContent: "",
       renderTimer: null,
       lastRenderTime: 0,
@@ -63,10 +64,6 @@ export default {
     },
   },
 
-  created() {
-    this.initializeMarkdown();
-  },
-
   beforeUnmount() {
     if (this.renderTimer) {
       clearTimeout(this.renderTimer);
@@ -74,50 +71,6 @@ export default {
   },
 
   methods: {
-    initializeMarkdown() {
-      // Initialize markdown-it with syntax highlighting
-      this.md = new MarkdownIt({
-        highlight: function (str, lang) {
-          if (lang && hljs.getLanguage(lang)) {
-            try {
-              return hljs.highlight(str, { language: lang }).value;
-            } catch (__) {
-              console.error(__);
-            }
-          }
-          return "";
-        },
-      });
-
-      // Add KaTeX support for math rendering
-      this.md.use(tm, {
-        engine: katex,
-        delimiters: "dollars",
-        katexOptions: { macros: { "\\RR": "\\mathbb{R}" } },
-      });
-
-      // Custom fence renderer for code blocks with language labels
-      const defaultFenceRenderer = this.md.renderer.rules.fence;
-      this.md.renderer.rules.fence = (tokens, idx, options, env, self) => {
-        const token = tokens[idx];
-        const info = token.info
-          ? this.md.utils.unescapeAll(token.info).trim()
-          : "";
-        const langName = info ? info.split(/\s+/g)[0] : "";
-
-        let result = defaultFenceRenderer(tokens, idx, options, env, self);
-
-        if (langName) {
-          result = `<div class="my-code-block">
-            <div class="language-label">${langName}</div>
-            ${result}
-          </div>`;
-        }
-
-        return result;
-      };
-    },
-
     throttledRender(content) {
       const now = Date.now();
       const timeSinceLastRender = now - this.lastRenderTime;
@@ -154,7 +107,11 @@ export default {
       try {
         // Handle incomplete code blocks during streaming
         const processedContent = this.preprocessStreamingContent(content);
+        // Use the mixin's md instance to render
         this.renderedContent = this.md.render(processedContent);
+
+        // Auto scroll to the bottom
+        this.scrollToBottom(this.$refs.mdRenderedContent);
       } catch (error) {
         console.warn("Markdown rendering error:", error);
         // Fallback: show content as-is if rendering fails
@@ -164,17 +121,12 @@ export default {
 
     preprocessStreamingContent(content) {
       // Handle incomplete code blocks by temporarily closing them
-      const codeBlockRegex = /```(\w+)?\n/g;
-      const matches = content.match(codeBlockRegex) || [];
-      const openBlocks = matches.length;
+      // Count all ``` markers - should be even (open/close pairs)
+      const allBlocks = (content.match(/```/g) || []).length;
 
-      // Count closing blocks
-      const closingBlocks = (content.match(/```\s*$/gm) || []).length;
-
-      // If we have unclosed code blocks, temporarily close them
-      if (openBlocks > closingBlocks) {
-        const unclosedCount = openBlocks - closingBlocks;
-        return content + "\n" + "```".repeat(unclosedCount);
+      // If odd number of ```, we have an unclosed block
+      if (allBlocks % 2 === 1) {
+        return content + "\n```";
       }
 
       return content;
@@ -185,7 +137,55 @@ export default {
       div.textContent = text;
       return div.innerHTML;
     },
+
+    scrollToBottom(el) {
+      this.$nextTick(() => {
+        // const target = getScrollTarget(this.$refs.mdRenderedContent);
+
+        // console.log(
+        //   "document.body.scrollHeight",
+        //   document.body.scrollHeight,
+        //   "target.scrollHeight",
+        //   el.scrollHeight
+        // );
+
+        this.getGap();
+
+        // if (el.scrollHeight + 1260 >= document.body.scrollHeight) {
+        //   setVerticalScrollPosition(target, el.scrollHeight, 0);
+        // }
+
+        // Scroll the mdRenderedContent element itself to show the latest content
+        // setVerticalScrollPosition(target, el.scrollHeight, 0);
+      });
+    },
+
+    getGap() {
+      const elEdge =
+        this.$refs.mdRenderedContent.getBoundingClientRect().bottom;
+      const innerHeight = window.innerHeight;
+      console.log(
+        "innerHeight",
+        innerHeight,
+        "elEdge",
+        elEdge,
+        "distance",
+        innerHeight - elEdge
+      );
+
+      const target = document.documentElement;
+      const currentScroll = target.scrollTop;
+
+      if (elEdge >= innerHeight) {
+        const newScroll = currentScroll + (elEdge - innerHeight);
+        setVerticalScrollPosition(target, newScroll, 0);
+      }
+    },
   },
+
+  // created() {
+  //   this.getGap();
+  // },
 };
 </script>
 
@@ -223,36 +223,7 @@ export default {
   }
 }
 
-/* Code block styling */
-.markdown-content :deep(.my-code-block) {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-  margin: 10px 0;
-  overflow: auto;
-  position: relative;
-}
-
-.markdown-content :deep(.language-label) {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background-color: #000;
-  color: #fff;
-  padding: 2px 8px;
-  font-size: 12px;
-  border-bottom-left-radius: 4px;
-}
-
-.markdown-content :deep(pre) {
-  margin: 0;
-  background-color: transparent;
-}
-
-.markdown-content :deep(code) {
-  font-family: "Courier New", Courier, monospace;
-}
+/* Code block styling is now in code-block.css */
 
 /* Math equation styling */
 .markdown-content :deep(.katex) {

@@ -31,7 +31,10 @@
     </div>
 
     <div class="debug-info q-mb-sm">
-      <small>Content length: {{ streamedContent.length }} | Streaming: {{ isStreaming }}</small>
+      <small
+        >Content length: {{ streamedContent.length }} | Streaming:
+        {{ isStreaming }}</small
+      >
     </div>
 
     <div class="markdown-container">
@@ -68,84 +71,169 @@ export default {
       streamInterval: null,
 
       // Example markdown content to simulate streaming
-      exampleContent: '# Streaming Markdown Example\n\n' +
-'This is a demonstration of **streaming markdown** rendering.\n\n' +
-'## Features\n\n' +
-'- ✓ Real-time rendering as content arrives\n' +
-'- ✓ Syntax highlighting for code blocks\n' +
-'- ✓ Math equation support with KaTeX\n' +
-'- ✓ Handles incomplete markdown gracefully\n\n' +
-'### Code Example\n\n' +
-'Here\'s a Python function:\n\n' +
-'```python\n' +
-'def fibonacci(n):\n' +
-'    """Calculate the nth Fibonacci number."""\n' +
-'    if n <= 1:\n' +
-'        return n\n' +
-'    return fibonacci(n-1) + fibonacci(n-2)\n\n' +
-'# Usage\n' +
-'result = fibonacci(10)\n' +
-'print(f"The 10th Fibonacci number is: {result}")\n' +
-'```\n\n' +
-'### Math Support\n\n' +
-'The quadratic formula is: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$\n\n' +
-'For display math:\n\n' +
-'$$\n' +
-'\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}\n' +
-'$$\n\n' +
-'### Lists and Formatting\n\n' +
-'1. **Bold text** for emphasis\n' +
-'2. *Italic text* for subtle emphasis\n' +
-'3. `Inline code` for technical terms\n' +
-'4. [Links](https://example.com) for references\n\n' +
-'> This is a blockquote. It can contain multiple lines\n' +
-'> and is useful for highlighting important information.\n\n' +
-'### Tables\n\n' +
-'| Language | Type | Year |\n' +
-'|----------|------|------|\n' +
-'| Python | Dynamic | 1991 |\n' +
-'| JavaScript | Dynamic | 1995 |\n' +
-'| Rust | Static | 2010 |\n\n' +
-'---\n\n' +
-'**Stream complete!** 🎉',
+      // exampleContent:
+      //   "# Streaming Markdown Example\n\n" +
+      //   "This is a demonstration of **streaming markdown** rendering.\n\n" +
+      //   "## Features\n\n" +
+      //   "- ✓ Real-time rendering as content arrives\n" +
+      //   "- ✓ Syntax highlighting for code blocks\n" +
+      //   "- ✓ Math equation support with KaTeX\n" +
+      //   "- ✓ Handles incomplete markdown gracefully\n\n" +
+      //   "### Code Example\n\n" +
+      //   "Here's a Python function:\n\n" +
+      //   "```python\n" +
+      //   "def fibonacci(n):\n" +
+      //   '    """Calculate the nth Fibonacci number."""\n' +
+      //   "    if n <= 1:\n" +
+      //   "        return n\n" +
+      //   "    return fibonacci(n-1) + fibonacci(n-2)\n\n" +
+      //   "# Usage\n" +
+      //   "result = fibonacci(10)\n" +
+      //   'print(f"The 10th Fibonacci number is: {result}")\n' +
+      //   "```\n\n" +
+      //   "### Math Support\n\n" +
+      //   "The quadratic formula is: $x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$\n\n" +
+      //   "For display math:\n\n" +
+      //   "$$\n" +
+      //   "\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}\n" +
+      //   "$$\n\n" +
+      //   "### Lists and Formatting\n\n" +
+      //   "1. **Bold text** for emphasis\n" +
+      //   "2. *Italic text* for subtle emphasis\n" +
+      //   "3. `Inline code` for technical terms\n" +
+      //   "4. [Links](https://example.com) for references\n\n" +
+      //   "> This is a blockquote. It can contain multiple lines\n" +
+      //   "> and is useful for highlighting important information.\n\n" +
+      //   "### Tables\n\n" +
+      //   "| Language | Type | Year |\n" +
+      //   "|----------|------|------|\n" +
+      //   "| Python | Dynamic | 1991 |\n" +
+      //   "| JavaScript | Dynamic | 1995 |\n" +
+      //   "| Rust | Static | 2010 |\n\n" +
+      //   "---\n\n" +
+      //   "**Stream complete!** 🎉",
 
       usageExample: `// Basic usage
-<StreamingMarkdown
-  :content="streamedContent"
-  :isStreaming="isStreaming"
-/>
+        <StreamingMarkdown
+          :content="streamedContent"
+          :isStreaming="isStreaming"
+        />
 
-// With custom debounce delay
-<StreamingMarkdown
-  :content="streamedContent"
-  :isStreaming="isStreaming"
-  :debounceDelay="100"
-/>
+        // With custom debounce delay
+        <StreamingMarkdown
+          :content="streamedContent"
+          :isStreaming="isStreaming"
+          :debounceDelay="100"
+        />
 
-// Example: Fetch API with streaming
-async connectToLLM() {
-  this.isStreaming = true;
-  this.streamedContent = '';
+        // Example: Fetch API with streaming
+        async connectToLLM() {
+          this.isStreaming = true;
+          this.streamedContent = '';
 
-  const response = await fetch('https://api.example.com/stream', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: 'Your prompt here' })
-  });
+          const response = await fetch('https://api.example.com/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: 'Your prompt here' })
+          });
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-    const chunk = decoder.decode(value);
-    this.streamedContent += chunk;  // Component auto-updates!
-  }
+            const chunk = decoder.decode(value);
+            this.streamedContent += chunk;  // Component auto-updates!
+          }
 
-  this.isStreaming = false;
-}`,
+          this.isStreaming = false;
+        }`,
+
+      exampleContent: `# Multi-language Code Examples
+
+## 1. JavaScript
+
+\`\`\`javascript
+function greet(name) {
+  console.log(\`Hello, \${name}!\`);
+}
+
+greet("World");
+\`\`\`
+
+## 2. Python
+
+\`\`\`python
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("World")
+\`\`\`
+
+## 3. TypeScript
+
+\`\`\`typescript
+function greet(name: string): void {
+  console.log(\`Hello, \${name}!\`);
+}
+
+greet("TypeScript");
+\`\`\`
+
+## 4. C++
+
+\`\`\`cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello, C++!" << endl;
+    return 0;
+}
+\`\`\`
+
+## 5. HTML
+
+\`\`\`html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello HTML</title>
+  </head>
+  <body>
+    <h1>Hello, World!</h1>
+  </body>
+</html>
+\`\`\`
+
+## 6. SQL
+
+\`\`\`sql
+SELECT name, age
+FROM users
+WHERE active = TRUE
+ORDER BY created_at DESC;
+\`\`\`
+
+## 7. Bash
+
+\`\`\`bash
+#!/bin/bash
+echo "Hello from Bash!"
+\`\`\`
+
+## 8. JSON
+
+\`\`\`json
+{
+  "name": "John Doe",
+  "age": 30,
+  "active": true
+}
+\`\`\`
+`,
     };
   },
 
@@ -162,7 +250,7 @@ async connectToLLM() {
         if (currentIndex >= this.exampleContent.length) {
           this.isStreaming = false;
           clearInterval(this.streamInterval);
-          console.log('Streaming complete!');
+          console.log("Streaming complete!");
           return;
         }
 

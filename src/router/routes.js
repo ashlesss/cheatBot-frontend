@@ -9,6 +9,10 @@ const routes = [
         path: "/test",
         component: () => import("pages/StreamingExample.vue"),
       },
+      {
+        path: "/codeblock",
+        component: () => import("pages/CodeBlockExample.vue"),
+      },
     ],
   },
 
